@@ -25,8 +25,13 @@ board is currently displaying.
 
 1. Install [PlatformIO Core](https://docs.platformio.org/en/latest/core/installation/index.html)
    (`pip install platformio`) or the VS Code extension.
-2. Set your WiFi + board host in `include/app_config.h`
-   (`DEFAULT_WIFI_SSID`, `DEFAULT_WIFI_PASS`, `DEFAULT_BOARD_HOST`).
+2. Copy the config template and fill in your WiFi + board host:
+   ```bash
+   cp include/app_config.h.example include/app_config.h
+   ```
+   Edit `include/app_config.h` (`DEFAULT_WIFI_SSID`, `DEFAULT_WIFI_PASS`,
+   `DEFAULT_BOARD_HOST`). **`app_config.h` is gitignored**, so your WiFi
+   credentials are never committed.
 3. Connect the CrowPanel over USB-C and:
 
 ```bash

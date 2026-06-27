@@ -16,3 +16,6 @@ Thumbs.db
 *.bin
 *.elf
 *.map
+
+# Local config with WiFi credentials — copy from include/app_config.h.example
+include/app_config.h
