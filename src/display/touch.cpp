@@ -33,8 +33,13 @@ void read_cb(lv_indev_drv_t* /*drv*/, lv_indev_data_t* data) {
   g_tp.read();
   if (g_tp.isTouched && g_tp.touches > 0) {
     data->state = LV_INDEV_STATE_PRESSED;
-    data->point.x = g_tp.points[0].x;
-    data->point.y = g_tp.points[0].y;
+    // GT911 is mounted 180 degrees relative to the panel on this board, so the
+    // raw coordinates are mirrored on both axes. Invert X and Y to match the
+    // LVGL display orientation.
+    int16_t x = (int16_t)PANEL_WIDTH - 1 - g_tp.points[0].x;
+    int16_t y = (int16_t)PANEL_HEIGHT - 1 - g_tp.points[0].y;
+    data->point.x = x < 0 ? 0 : (x >= PANEL_WIDTH ? PANEL_WIDTH - 1 : x);
+    data->point.y = y < 0 ? 0 : (y >= PANEL_HEIGHT ? PANEL_HEIGHT - 1 : y);
   } else {
     data->state = LV_INDEV_STATE_RELEASED;
   }
