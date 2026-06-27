@@ -24,7 +24,7 @@ struct MessagePayload {
   String display_mode = "scroll";   // "scroll" | "fixed"
   String scroll_speed = "medium";   // "slow" | "medium" | "fast"
   String font = "bitmap8";          // "bitmap6" | "bitmap8"
-  uint8_t r = 255, g = 255, b = 255;
+  uint8_t r = 255, g = 165, b = 0;  // fixed orange (M3 will make this selectable)
   uint8_t bgr = 0, bgg = 0, bgb = 0;
 };
 

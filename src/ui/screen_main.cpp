@@ -13,11 +13,13 @@ lv_obj_t* s_status_label = nullptr;
 lv_obj_t* s_preview_label = nullptr;
 lv_obj_t* s_counter_label = nullptr;
 lv_obj_t* s_word_grid = nullptr;
+lv_obj_t* s_cat_selector = nullptr;
+int s_current_cat = 0;  // index into CATEGORY_MAPS; mirrors the checked tab
 
 // --- Embedded word tiles (M2). Future: load from data/words.json (M3).
 // "\n" starts a new row; "" terminates the map. Order mirrors data/words.json.
-const char* MAP_NAMES[]  = {"EMMA", "KOTA", "MUM", "\n", "DAD", "GRAN", "ALL", ""};
-const char* MAP_CHORES[] = {"LAUNDRY", "CLEAN", "DISHES", "\n", "TRASH", "TIDY", "ROOM", "BATH", ""};
+const char* MAP_NAMES[]  = {"EMMA", "LEO", "KOTA", "\n", "HARUNA", "EVERYONE", ""};
+const char* MAP_CHORES[] = {"CLEAN UP", "SLEEP TIME", "QUIET", "\n", "DO NOT FIGHT", "HOMEWORK TIME", ""};
 const char* MAP_WORDS[]  = {"UP", "NOW", "PLEASE", "\n", "DONE", "HELP", "TIME", "\n", "GO", "STOP", "WAIT", ""};
 const char* MAP_STATUS[] = {"READY", "DINNER", "HELLO", "\n", "BYE", "GREAT", "JOB", "\n", "LOVE", "YOU", ""};
 const char** CATEGORY_MAPS[] = {MAP_NAMES, MAP_CHORES, MAP_WORDS, MAP_STATUS};
@@ -43,6 +45,17 @@ void refresh_preview() {
 // blocking HTTP call. (M4 moves HTTP off the UI thread entirely.)
 void pump_ui() { lv_refr_now(NULL); }
 
+// Switch the active category: swap the word grid map and move the checked tab.
+void select_category(int id) {
+  if (id < 0 || id >= NUM_CATEGORIES) return;
+  if (s_cat_selector) {
+    lv_btnmatrix_clear_btn_ctrl(s_cat_selector, s_current_cat, LV_BTNMATRIX_CTRL_CHECKED);
+    lv_btnmatrix_set_btn_ctrl(s_cat_selector, id, LV_BTNMATRIX_CTRL_CHECKED);
+  }
+  if (s_word_grid) lv_btnmatrix_set_map(s_word_grid, CATEGORY_MAPS[id]);
+  s_current_cat = id;
+}
+
 // --- event handlers ---
 
 void word_event_cb(lv_event_t* e) {
@@ -50,30 +63,24 @@ void word_event_cb(lv_event_t* e) {
   uint16_t id = lv_btnmatrix_get_selected_btn(obj);
   if (id == LV_BTNMATRIX_BTN_NONE) return;
   const char* txt = lv_btnmatrix_get_btn_text(obj, id);
+  bool was_names = (s_current_cat == 0);
   if (txt && !s_builder->appendWord(txt)) {
     screen_main::setStatusText("message full (128 chars)");
   }
   refresh_preview();
+  // Typical flow: pick a name, then a chore. Auto-advance NAMES -> CHORES.
+  if (was_names) select_category(1);
 }
 
-void edit_event_cb(lv_event_t* e) {
-  lv_obj_t* obj = lv_event_get_target(e);
-  uint16_t id = lv_btnmatrix_get_selected_btn(obj);
-  switch (id) {
-    case 0: s_builder->appendSpace(); break;     // SPACE
-    case 1: s_builder->backspaceToken(); break;  // DEL (whole word)
-    case 2: s_builder->clear(); break;           // CLEAR
-    default: break;
-  }
+void clear_event_cb(lv_event_t* /*e*/) {
+  s_builder->clear();
   refresh_preview();
 }
 
 void category_event_cb(lv_event_t* e) {
   lv_obj_t* obj = lv_event_get_target(e);
   uint16_t id = lv_btnmatrix_get_selected_btn(obj);
-  if (id < NUM_CATEGORIES && s_word_grid) {
-    lv_btnmatrix_set_map(s_word_grid, CATEGORY_MAPS[id]);
-  }
+  if (id < NUM_CATEGORIES) select_category(id);
 }
 
 void send_event_cb(lv_event_t* /*e*/) {
@@ -86,7 +93,7 @@ void send_event_cb(lv_event_t* /*e*/) {
 
   MessagePayload m;
   m.text = s_builder->text();
-  // M3 will apply the user-selected color here; default white for now.
+  // Colour is fixed orange for now (see MessagePayload defaults); M3 adds a picker.
   bool ok = s_board->postMessage(m);
   screen_main::setStatusText(ok ? "sent!" : "send failed");
 }
@@ -148,6 +155,11 @@ lv_obj_t* create(BoardClient* board, MessageBuilder* builder) {
   lv_obj_set_flex_align(prev, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER,
                         LV_FLEX_ALIGN_CENTER);
   lv_obj_set_style_pad_hor(prev, 12, 0);
+  lv_obj_set_style_pad_ver(prev, 0, 0);
+  lv_obj_set_style_pad_column(prev, 10, 0);
+  // Plain container scrolls by default, which snaps children to the top edge and
+  // breaks the flex cross-axis centering. Disable it so everything sits centred.
+  lv_obj_clear_flag(prev, LV_OBJ_FLAG_SCROLLABLE);
 
   s_preview_label = lv_label_create(prev);
   lv_obj_set_flex_grow(s_preview_label, 1);
@@ -158,20 +170,26 @@ lv_obj_t* create(BoardClient* board, MessageBuilder* builder) {
   s_counter_label = lv_label_create(prev);
   lv_obj_set_style_text_color(s_counter_label, lv_color_hex(0xAAAAAA), 0);
 
-  // 3) Edit toolbar
-  static const char* edit_map[] = {"SPACE", "DEL", "CLEAR", ""};
-  make_btnmatrix(scr, edit_map, edit_event_cb, 56, false);
+  // Clear button (x) lives in the preview row now that the edit toolbar is gone.
+  lv_obj_t* clear_btn = lv_btn_create(prev);
+  lv_obj_set_size(clear_btn, 52, 52);
+  lv_obj_set_style_bg_color(clear_btn, lv_palette_main(LV_PALETTE_RED), 0);
+  lv_obj_add_event_cb(clear_btn, clear_event_cb, LV_EVENT_CLICKED, NULL);
+  lv_obj_t* clear_lbl = lv_label_create(clear_btn);
+  lv_label_set_text(clear_lbl, LV_SYMBOL_CLOSE);
+  lv_obj_center(clear_lbl);
 
-  // 4) Category selector (one-checked)
+  // 3) Category selector (one-checked)
   static const char* category_map[] = {"NAMES", "CHORES", "WORDS", "STATUS", ""};
-  lv_obj_t* cat = make_btnmatrix(scr, category_map, category_event_cb, 52, true);
+  lv_obj_t* cat = make_btnmatrix(scr, category_map, category_event_cb, 78, true);
   lv_btnmatrix_set_btn_ctrl(cat, 0, LV_BTNMATRIX_CTRL_CHECKED);
+  s_cat_selector = cat;
 
-  // 5) Word grid (fills remaining space)
+  // 4) Word grid (fills remaining space)
   s_word_grid = make_btnmatrix(scr, CATEGORY_MAPS[0], word_event_cb, 0, false);
   lv_obj_set_style_text_font(s_word_grid, &lv_font_montserrat_20, 0);
 
-  // 6) Action row: SEND / CALL
+  // 5) Action row: SEND / CALL
   lv_obj_t* actions = lv_obj_create(scr);
   lv_obj_set_width(actions, LV_PCT(100));
   lv_obj_set_height(actions, 70);

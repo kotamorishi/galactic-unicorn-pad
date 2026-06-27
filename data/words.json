@@ -1,7 +1,7 @@
 {
   "categories": [
-    { "name": "NAMES",  "words": ["EMMA", "KOTA", "MUM", "DAD", "GRAN", "ALL"] },
-    { "name": "CHORES", "words": ["LAUNDRY", "CLEAN", "DISHES", "TRASH", "TIDY", "ROOM", "BATH"] },
+    { "name": "NAMES",  "words": ["EMMA", "LEO", "KOTA", "HARUNA", "EVERYONE"] },
+    { "name": "CHORES", "words": ["CLEAN UP", "SLEEP TIME", "QUIET", "DO NOT FIGHT", "HOMEWORK TIME"] },
     { "name": "WORDS",  "words": ["UP", "NOW", "PLEASE", "DONE", "HELP", "TIME", "GO", "STOP", "WAIT"] },
     { "name": "STATUS", "words": ["READY", "DINNER", "HELLO", "BYE", "GREAT", "JOB", "LOVE", "YOU"] }
   ]
