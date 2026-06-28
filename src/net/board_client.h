@@ -37,7 +37,7 @@ public:
   bool postMessage(const MessagePayload& m);        // POST /api/message
   bool postBrightness(int offset);                  // POST /api/system/brightness
   bool postVolume(int volume0_100);                 // POST /api/system/volume
-  bool call(int presetId, int volume, int count);   // POST /api/call
+  bool previewSound(int presetId, int volume, int count);  // POST /api/sound/preview
 
   const String& base() const { return _base; }
 

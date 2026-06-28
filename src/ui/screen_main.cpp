@@ -99,10 +99,10 @@ void send_event_cb(lv_event_t* /*e*/) {
 }
 
 void call_event_cb(lv_event_t* /*e*/) {
-  screen_main::setStatusText("calling...");
+  screen_main::setStatusText("playing sound...");
   pump_ui();
-  bool ok = s_board->call(/*preset_id=*/1, /*volume=*/50, /*count=*/1);
-  screen_main::setStatusText(ok ? "called!" : "call failed");
+  bool ok = s_board->previewSound(/*preset_id=*/1, /*volume=*/50, /*count=*/1);
+  screen_main::setStatusText(ok ? "sound played!" : "sound failed");
 }
 
 // --- small layout helpers ---

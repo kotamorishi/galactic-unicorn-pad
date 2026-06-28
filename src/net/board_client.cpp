@@ -69,13 +69,15 @@ bool BoardClient::postVolume(int volume0_100) {
   return _postJson("/api/system/volume", body);
 }
 
-bool BoardClient::call(int presetId, int volume, int count) {
+bool BoardClient::previewSound(int presetId, int volume, int count) {
+  // /api/sound/preview rings the preset WITHOUT flashing an alert on the LED
+  // board (unlike /api/call). Same as the web UI's "Test Sound" button.
   JsonDocument doc;
   doc["preset_id"] = presetId;
   doc["volume"] = volume;
   doc["count"] = count;
   String body; serializeJson(doc, body);
-  return _postJson("/api/call", body);
+  return _postJson("/api/sound/preview", body);
 }
 
 bool BoardClient::getStatus(BoardStatus& out) {
