@@ -51,8 +51,11 @@
 #define RGB_VSYNC_PULSE_WIDTH   31
 #define RGB_VSYNC_BACK_PORCH    13
 #define RGB_PCLK_ACTIVE_NEG     1
-// Keep PCLK conservative at first (PSRAM framebuffer bandwidth). Raise later.
-#define RGB_PREFER_SPEED        15000000  // 15 MHz
+// Refresh = PCLK / ((800+128) * (480+45)) = PCLK / 487200.
+//   15 MHz -> ~31 Hz, 18 MHz -> ~37 Hz, 21 MHz -> ~43 Hz.
+// 18 MHz caused rolling/drift on this unit (PSRAM bandwidth ceiling without a
+// bounce buffer, which needs Arduino_GFX >=1.6.0). Keep at the stable 15 MHz.
+#define RGB_PREFER_SPEED        15000000  // 15 MHz (~31 Hz refresh)
 
 // ---- Backlight ----
 // Direct GPIO on this model. (Behind CH422G on some other revisions.)

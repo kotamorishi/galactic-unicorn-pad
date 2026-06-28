@@ -14,8 +14,14 @@ lv_disp_draw_buf_t g_draw_buf;
 lv_color_t* g_buf1 = nullptr;
 lv_color_t* g_buf2 = nullptr;
 
-// ~10 rows worth of buffer at 800px wide. Two of these = ~256KB in PSRAM.
-constexpr uint32_t kBufLines = 80;
+// Full-screen double buffers in PSRAM + LVGL full_refresh: LVGL renders the
+// whole frame off-screen, then we copy it to the panel in one shot. This kills
+// the per-strip flicker that small partial buffers produced. Kept off-screen
+// (not direct-mode) so the RGB DMA never scans a half-drawn buffer — direct-mode
+// on the single live framebuffer was tried and corrupts the image.
+// (True tear-free rendering needs a hardware second framebuffer via esp_lcd
+// num_fbs=2, which neither Arduino_GFX 1.3.x nor LovyanGFX v1 expose.)
+constexpr uint32_t kBufLines = PANEL_HEIGHT;  // full screen
 
 void flush_cb(lv_disp_drv_t* drv, const lv_area_t* area, lv_color_t* color_p) {
   uint32_t w = area->x2 - area->x1 + 1;
@@ -68,9 +74,12 @@ bool begin() {
   disp_drv.ver_res = PANEL_HEIGHT;
   disp_drv.flush_cb = flush_cb;
   disp_drv.draw_buf = &g_draw_buf;
+  // Render the entire frame each pass and push it in one transfer (no partial
+  // strips), which removes the strip-flicker artefacts.
+  disp_drv.full_refresh = 1;
   lv_disp_drv_register(&disp_drv);
 
-  Serial.println("[display] initialised");
+  Serial.println("[display] initialised (full-refresh, full-screen buffers)");
   return true;
 }
 
