@@ -18,8 +18,8 @@ int s_current_cat = 0;  // index into CATEGORY_MAPS; mirrors the checked tab
 
 // --- Embedded word tiles (M2). Future: load from data/words.json (M3).
 // "\n" starts a new row; "" terminates the map. Order mirrors data/words.json.
-const char* MAP_NAMES[]  = {"EMMA", "LEO", "KOTA", "\n", "HARUNA", "EVERYONE", ""};
-const char* MAP_CHORES[] = {"CLEAN UP", "SLEEP TIME", "QUIET", "\n", "DO NOT FIGHT", "HOMEWORK TIME", ""};
+const char* MAP_NAMES[]  = {"EMMA", "LEO", "KIDS", "\n", "KOTA", "HARUNA", "EVERYONE", ""};
+const char* MAP_CHORES[] = {"CLEAN UP!", "SLEEP TIME!", "QUIET", "\n", "DO NOT FIGHT", "HOMEWORK TIME", ""};
 const char* MAP_WORDS[]  = {"UP", "NOW", "PLEASE", "\n", "DONE", "HELP", "TIME", "\n", "GO", "STOP", "WAIT", ""};
 const char* MAP_STATUS[] = {"READY", "DINNER", "HELLO", "\n", "BYE", "GREAT", "JOB", "\n", "LOVE", "YOU", ""};
 const char** CATEGORY_MAPS[] = {MAP_NAMES, MAP_CHORES, MAP_WORDS, MAP_STATUS};
