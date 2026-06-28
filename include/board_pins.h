@@ -54,8 +54,12 @@
 // Refresh = PCLK / ((800+128) * (480+45)) = PCLK / 487200.
 //   15 MHz -> ~31 Hz, 18 MHz -> ~37 Hz, 21 MHz -> ~43 Hz.
 // 18 MHz caused rolling/drift on this unit (PSRAM bandwidth ceiling without a
-// bounce buffer, which needs Arduino_GFX >=1.6.0). Keep at the stable 15 MHz.
-#define RGB_PREFER_SPEED        15000000  // 15 MHz (~31 Hz refresh)
+// bounce buffer, which needs Arduino_GFX >=1.6.0). 15 MHz was stable when idle
+// but rapid LVGL flush bursts (frantic word tapping) still starved the DMA and
+// blacked the panel; lowering PCLK reduces the DMA's PSRAM read bandwidth so CPU
+// flushes have more headroom. Testing 10 MHz (decisive); raise toward 12-13 MHz
+// later for less flicker if it holds. Trade-off: ~20 Hz refresh (more flicker).
+#define RGB_PREFER_SPEED        10000000  // 10 MHz (~20 Hz refresh)
 
 // ---- Backlight ----
 // Direct GPIO on this model. (Behind CH422G on some other revisions.)

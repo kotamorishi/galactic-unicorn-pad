@@ -1,8 +1,8 @@
 {
   "categories": [
     { "name": "NAMES",  "words": ["EMMA", "LEO", "KIDS", "KOTA", "HARUNA", "EVERYONE"] },
-    { "name": "CHORES", "words": ["CLEAN UP!", "SLEEP TIME!", "QUIET", "DO NOT FIGHT", "HOMEWORK TIME"] },
-    { "name": "WORDS",  "words": ["UP", "NOW", "PLEASE", "DONE", "HELP", "TIME", "GO", "STOP", "WAIT"] },
-    { "name": "STATUS", "words": ["READY", "DINNER", "HELLO", "BYE", "GREAT", "JOB", "LOVE", "YOU"] }
+    { "name": "CHORES", "words": ["CLEAN UP!", "SLEEP TIME!", "QUIET", "DO NOT FIGHT!", "LAUNDRY", "HOMEWORK TIME"] },
+    { "name": "WORDS",  "words": ["UP", "NOW", "PLEASE", "DONE", "HELP", "TIME", "GO", "TO", "SCHOOL", "STOP", "PARK"] },
+    { "name": "PRESET", "words": ["KOTA MEETING NOW, PLEASE QUIET!", "YouTube ON AIR", "DO NOT DISTURB"] }
   ]
 }

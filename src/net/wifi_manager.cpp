@@ -4,31 +4,17 @@
 
 namespace wifimgr {
 
-bool begin(const String& ssid, const String& pass) {
+void beginAsync(const String& ssid, const String& pass) {
   if (ssid.length() == 0) {
     Serial.println("[wifi] no SSID configured; skipping (offline mode)");
-    return false;
+    return;
   }
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid.c_str(), pass.c_str());
-  Serial.printf("[wifi] connecting to %s", ssid.c_str());
-
-  uint32_t start = millis();
-  while (WiFi.status() != WL_CONNECTED && millis() - start < 10000) {
-    delay(250);
-    Serial.print(".");
-  }
-  Serial.println();
-
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.printf("[wifi] connected, ip=%s\n", WiFi.localIP().toString().c_str());
-    // Start mDNS responder so the controller is also discoverable.
-    MDNS.begin("galacticpad");
-    return true;
-  }
-  Serial.println("[wifi] connect failed; running offline");
-  return false;
+  Serial.printf("[wifi] connecting to %s (background)\n", ssid.c_str());
 }
+
+void startMdns() { MDNS.begin("galacticpad"); }
 
 bool isConnected() { return WiFi.status() == WL_CONNECTED; }
 

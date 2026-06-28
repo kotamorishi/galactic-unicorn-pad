@@ -35,6 +35,7 @@
 #define LV_FONT_MONTSERRAT_20 1
 #define LV_FONT_MONTSERRAT_28 1
 #define LV_FONT_MONTSERRAT_36 1
+#define LV_FONT_MONTSERRAT_48 1   // big date on the clock screen
 #define LV_FONT_DEFAULT &lv_font_montserrat_20
 
 // ---- Widgets actually used ----
@@ -46,6 +47,7 @@
 #define LV_USE_COLORWHEEL 1
 #define LV_USE_KEYBOARD 1
 #define LV_USE_TEXTAREA 1
+#define LV_USE_CANVAS 1     // analog clock face, hand-drawn (screen_clock)
 #define LV_LABEL_LONG_TXT_HINT 1
 
 // ---- Logging (off in normal builds) ----

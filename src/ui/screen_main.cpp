@@ -19,17 +19,17 @@ int s_current_cat = 0;  // index into CATEGORY_MAPS; mirrors the checked tab
 // --- Embedded word tiles (M2). Future: load from data/words.json (M3).
 // "\n" starts a new row; "" terminates the map. Order mirrors data/words.json.
 const char* MAP_NAMES[]  = {"EMMA", "LEO", "KIDS", "\n", "KOTA", "HARUNA", "EVERYONE", ""};
-const char* MAP_CHORES[] = {"CLEAN UP!", "SLEEP TIME!", "QUIET", "\n", "DO NOT FIGHT", "HOMEWORK TIME", ""};
-const char* MAP_WORDS[]  = {"UP", "NOW", "PLEASE", "\n", "DONE", "HELP", "TIME", "\n", "GO", "STOP", "WAIT", ""};
-const char* MAP_STATUS[] = {"READY", "DINNER", "HELLO", "\n", "BYE", "GREAT", "JOB", "\n", "LOVE", "YOU", ""};
-const char** CATEGORY_MAPS[] = {MAP_NAMES, MAP_CHORES, MAP_WORDS, MAP_STATUS};
+const char* MAP_CHORES[] = {"CLEAN UP!", "SLEEP TIME!", "QUIET", "\n", "DO NOT FIGHT!", "LAUNDRY", "HOMEWORK TIME", ""};
+const char* MAP_WORDS[]  = {"UP", "NOW", "PLEASE", "\n", "DONE", "HELP", "TIME", "\n", "GO", "TO", "SCHOOL", "\n", "STOP", "PARK", ""};
+// PRESET: ready-made full phrases, one button per row (they're long).
+const char* MAP_PRESET[] = {"KOTA MEETING NOW, PLEASE QUIET!", "\n", "YouTube ON AIR", "\n", "DO NOT DISTURB", ""};
+const char** CATEGORY_MAPS[] = {MAP_NAMES, MAP_CHORES, MAP_WORDS, MAP_PRESET};
 constexpr int NUM_CATEGORIES = 4;
 
 void refresh_preview() {
   if (!s_preview_label) return;
   const String& t = s_builder->text();
-  lv_label_set_text(s_preview_label,
-                    t.length() ? t.c_str() : "(tap words to build a message)");
+  lv_label_set_text(s_preview_label, t.c_str());  // empty when nothing built yet
 
   char buf[16];
   snprintf(buf, sizeof(buf), "%u/%d", (unsigned)s_builder->length(), MESSAGE_MAX_CHARS);
@@ -165,7 +165,11 @@ lv_obj_t* create(BoardClient* board, MessageBuilder* builder) {
   lv_obj_set_flex_grow(s_preview_label, 1);
   lv_obj_set_style_text_font(s_preview_label, &lv_font_montserrat_28, 0);
   lv_obj_set_style_text_color(s_preview_label, lv_color_white(), 0);
-  lv_label_set_long_mode(s_preview_label, LV_LABEL_LONG_SCROLL_CIRCULAR);
+  // WRAP, not SCROLL_CIRCULAR: a scrolling label animates every frame forever
+  // once the message overflows, and on this panel that continuous repaint
+  // starves the RGB DMA (PSRAM bandwidth) and blacks the screen until the next
+  // full redraw. Wrapping is static — no per-frame flushes.
+  lv_label_set_long_mode(s_preview_label, LV_LABEL_LONG_WRAP);
 
   s_counter_label = lv_label_create(prev);
   lv_obj_set_style_text_color(s_counter_label, lv_color_hex(0xAAAAAA), 0);
@@ -180,7 +184,7 @@ lv_obj_t* create(BoardClient* board, MessageBuilder* builder) {
   lv_obj_center(clear_lbl);
 
   // 3) Category selector (one-checked)
-  static const char* category_map[] = {"NAMES", "CHORES", "WORDS", "STATUS", ""};
+  static const char* category_map[] = {"NAMES", "CHORES", "WORDS", "PRESET", ""};
   lv_obj_t* cat = make_btnmatrix(scr, category_map, category_event_cb, 78, true);
   lv_btnmatrix_set_btn_ctrl(cat, 0, LV_BTNMATRIX_CTRL_CHECKED);
   s_cat_selector = cat;

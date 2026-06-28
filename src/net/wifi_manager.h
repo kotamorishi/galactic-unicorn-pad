@@ -6,10 +6,14 @@
 #include <Arduino.h>
 
 namespace wifimgr {
-// Begin STA connection (non-blocking-ish: waits up to ~10s). Empty ssid => skip.
-bool begin(const String& ssid, const String& pass);
+// Start STA connection WITHOUT blocking; poll isConnected() from loop(). Empty
+// ssid => skip (offline). Keeps boot fast so the UI appears immediately.
+void beginAsync(const String& ssid, const String& pass);
 bool isConnected();
 void loop();  // call periodically; placeholder for reconnect logic (M4)
+
+// Start the mDNS responder. Call once, after the connection comes up.
+void startMdns();
 
 // Resolve "foo.local" to a dotted IP string. Returns the input unchanged if it
 // is already an IP or resolution fails.

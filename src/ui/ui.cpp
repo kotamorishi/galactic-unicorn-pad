@@ -1,5 +1,6 @@
 #include "ui.h"
 #include "screen_main.h"
+#include "screen_clock.h"
 #include "model/message_builder.h"
 #include "net/board_client.h"
 #include "app_config.h"
@@ -9,6 +10,14 @@
 namespace {
 MessageBuilder g_builder;     // the message being assembled
 BoardClient* g_board = nullptr;
+
+// Screen-saver: after CLOCK_IDLE_MS with no touch, swap the word picker for the
+// clock/calendar screen; any touch (which resets LVGL's inactivity timer) swaps
+// back.
+lv_obj_t* g_main_scr = nullptr;
+lv_obj_t* g_clock_scr = nullptr;
+bool g_on_clock = false;
+constexpr uint32_t CLOCK_IDLE_MS = 15000;  // 15 s of no touch -> clock screen
 
 // /api/status is fetched on Core 0 so its blocking HTTP (up to HTTP_TIMEOUT_MS)
 // never stalls the LVGL/touch loop on Core 1. The task publishes the latest
@@ -39,8 +48,8 @@ namespace ui {
 
 void init(BoardClient* board) {
   g_board = board;
-  lv_obj_t* scr = screen_main::create(board, &g_builder);
-  lv_scr_load(scr);
+  g_main_scr = screen_main::create(board, &g_builder);
+  lv_scr_load(g_main_scr);
 
   g_status_mtx = xSemaphoreCreateMutex();
   // Pin to Core 0 (PRO_CPU, where the WiFi stack lives) at low priority.
@@ -49,6 +58,18 @@ void init(BoardClient* board) {
 }
 
 void tick() {
+  // Idle -> show the clock/calendar screen; any touch -> back to the picker.
+  uint32_t idle = lv_disp_get_inactive_time(NULL);
+  if (!g_on_clock && idle >= CLOCK_IDLE_MS) {
+    g_clock_scr = screen_clock::create();
+    lv_scr_load(g_clock_scr);
+    g_on_clock = true;
+  } else if (g_on_clock && idle < CLOCK_IDLE_MS) {
+    lv_scr_load(g_main_scr);
+    screen_clock::destroy();
+    g_on_clock = false;
+  }
+
   if (!g_status_mtx) return;
   BoardStatus st;
   bool ok = false;
