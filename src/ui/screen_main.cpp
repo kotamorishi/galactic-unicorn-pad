@@ -84,18 +84,18 @@ void category_event_cb(lv_event_t* e) {
 }
 
 void send_event_cb(lv_event_t* /*e*/) {
-  if (s_builder->empty()) {
-    screen_main::setStatusText("nothing to send");
-    return;
-  }
-  screen_main::setStatusText("sending...");
+  // An empty SEND clears the board (sends an empty message), since there is no
+  // dedicated clear-the-display control.
+  bool clearing = s_builder->empty();
+  screen_main::setStatusText(clearing ? "clearing board..." : "sending...");
   pump_ui();
 
   MessagePayload m;
-  m.text = s_builder->text();
+  m.text = s_builder->text();  // empty string -> board shows nothing
   // Colour is fixed orange for now (see MessagePayload defaults); M3 adds a picker.
   bool ok = s_board->postMessage(m);
-  screen_main::setStatusText(ok ? "sent!" : "send failed");
+  screen_main::setStatusText(ok ? (clearing ? "board cleared!" : "sent!")
+                                : "send failed");
 }
 
 void call_event_cb(lv_event_t* /*e*/) {
